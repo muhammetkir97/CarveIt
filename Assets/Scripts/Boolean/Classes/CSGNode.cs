@@ -5,27 +5,27 @@ using System.Linq;
 
 namespace Parabox.CSG
 {
-    sealed class Node
+    sealed class CSGNode
     {
         public List<Polygon> polygons;
 
-        public Node front;
-        public Node back;
+        public CSGNode front;
+        public CSGNode back;
 
         public Plane plane;
 
-        public Node()
+        public CSGNode()
         {
             front = null;
             back = null;
         }
 
-        public Node(List<Polygon> list)
+        public CSGNode(List<Polygon> list)
         {
             Build(list);
         }
 
-        public Node(List<Polygon> list, Plane plane, Node front, Node back)
+        public CSGNode(List<Polygon> list, Plane plane, CSGNode front, CSGNode back)
         {
             this.polygons = list;
             this.plane = plane;
@@ -33,16 +33,16 @@ namespace Parabox.CSG
             this.back = back;
         }
 
-        public Node Clone()
+        public CSGNode Clone()
         {
-            Node clone = new Node(this.polygons, this.plane, this.front, this.back);
+            CSGNode clone = new CSGNode(this.polygons, this.plane, this.front, this.back);
 
             return clone;
         }
 
         // Remove all polygons in this BSP tree that are inside the other BSP tree
         // `bsp`.
-        public void ClipTo(Node other)
+        public void ClipTo(CSGNode other)
         {
             this.polygons = other.ClipPolygons(this.polygons);
 
@@ -75,23 +75,23 @@ namespace Parabox.CSG
                 this.back.Invert();
             }
 
-            Node tmp = this.front;
+            CSGNode tmp = this.front;
             this.front = this.back;
             this.back = tmp;
         }
 
         // Build a BSP tree out of `polygons`. When called on an existing tree, the
         // new polygons are filtered down to the bottom of the tree and become new
-        // nodes there. Each set of polygons is partitioned using the first polygon
+        // CSGNodes there. Each set of polygons is partitioned using the first polygon
         // (no heuristic is used to pick a good split).
         public void Build(List<Polygon> list)
         {
             if (list.Count < 1)
                 return;
 
-            bool newNode = plane == null || !plane.Valid(); 
+            bool newCSGNode = plane == null || !plane.Valid(); 
 
-            if (newNode)
+            if (newCSGNode)
             {
                 plane = new Plane();
                 plane.normal = list[0].plane.normal;
@@ -111,20 +111,20 @@ namespace Parabox.CSG
             if (listFront.Count > 0)
             {                
                 // SplitPolygon can fail to correctly identify coplanar planes when the epsilon value is too low. When
-                // this happens, the front or back list will be filled and built into a new node recursively. This 
+                // this happens, the front or back list will be filled and built into a new CSGNode recursively. This 
                 // check catches that case and sorts the front/back lists into the coplanar polygons collection.
-                if (newNode && list.SequenceEqual(listFront))
+                if (newCSGNode && list.SequenceEqual(listFront))
                     polygons.AddRange(listFront);
                 else
-                    (front ?? (front = new Node())).Build(listFront);
+                    (front ?? (front = new CSGNode())).Build(listFront);
             }
 
             if (listBack.Count > 0)
             {
-                if (newNode && list.SequenceEqual(listBack))
+                if (newCSGNode && list.SequenceEqual(listBack))
                     polygons.AddRange(listBack);
                 else
-                    (back ?? (back = new Node())).Build(listBack);
+                    (back ?? (back = new CSGNode())).Build(listBack);
             }
         }
 
@@ -191,10 +191,10 @@ namespace Parabox.CSG
 
         // Return a new CSG solid representing space in either this solid or in the
         // solid `csg`. Neither this solid nor the solid `csg` are modified.
-        public static Node Union(Node a1, Node b1)
+        public static CSGNode Union(CSGNode a1, CSGNode b1)
         {
-            Node a = a1.Clone();
-            Node b = b1.Clone();
+            CSGNode a = a1.Clone();
+            CSGNode b = b1.Clone();
         
             a.ClipTo(b);
             b.ClipTo(a);
@@ -204,17 +204,17 @@ namespace Parabox.CSG
         
             a.Build(b.AllPolygons());
         
-            Node ret = new Node(a.AllPolygons());
+            CSGNode ret = new CSGNode(a.AllPolygons());
         
             return ret;
         }
         
         // Return a new CSG solid representing space in this solid but not in the
         // solid `csg`. Neither this solid nor the solid `csg` are modified.
-        public static Node Subtract(Node a1, Node b1)
+        public static CSGNode Subtract(CSGNode a1, CSGNode b1)
         {
-            Node a = a1.Clone();
-            Node b = b1.Clone();
+            CSGNode a = a1.Clone();
+            CSGNode b = b1.Clone();
         
             a.Invert();
             a.ClipTo(b);
@@ -225,17 +225,17 @@ namespace Parabox.CSG
             a.Build(b.AllPolygons());
             a.Invert();
         
-            Node ret = new Node(a.AllPolygons());
+            CSGNode ret = new CSGNode(a.AllPolygons());
         
             return ret;
         }
 
         // Return a new CSG solid representing space both this solid and in the
         // solid `csg`. Neither this solid nor the solid `csg` are modified.
-        public static Node Intersect(Node a1, Node b1)
+        public static CSGNode Intersect(CSGNode a1, CSGNode b1)
         {
-            Node a = a1.Clone();
-            Node b = b1.Clone();
+            CSGNode a = a1.Clone();
+            CSGNode b = b1.Clone();
 
             a.Invert();
             b.ClipTo(a);
@@ -246,7 +246,7 @@ namespace Parabox.CSG
             a.Build(b.AllPolygons());
             a.Invert();
 
-            Node ret = new Node(a.AllPolygons());
+            CSGNode ret = new CSGNode(a.AllPolygons());
 
             return ret;
         }

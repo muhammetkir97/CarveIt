@@ -32,28 +32,10 @@ using Parabox.CSG;
         
         if (Physics.Raycast(ray, out hit)) 
         {
-            if(TotalPoint > 2)
-            {
-                Debug.Log(TotalPoint);
-                if(Vector3.Distance(DrawedVertices[TotalPoint],hit.point) > 0.01f)
-                {
-                    TotalPoint += 2;
-                    DrawedVertices.Add(hit.point);
-                    DrawedUv.Add(Vector2.zero);
-                    DrawedNormals.Add(Vector3.up);
 
-                    Vector3 paralelPoint = hit.point;
-                    paralelPoint.z += 0.2f;
-                    DrawedVertices.Add(paralelPoint);
-                    DrawedUv.Add(Vector2.zero);
-                    DrawedNormals.Add(-Vector3.up);
-
-                    Debug.DrawRay(hit.point,hit.normal * 3,Color.red,5f);
-                }
-            }
-            else
+            if(TotalPoint > 0 && Vector3.Distance(DrawedVertices[TotalPoint],hit.point) > 0.01f)
             {
-                TotalPoint = 2;
+                TotalPoint += 2;
                 DrawedVertices.Add(hit.point);
                 DrawedUv.Add(Vector2.zero);
                 DrawedNormals.Add(Vector3.up);
@@ -67,6 +49,7 @@ using Parabox.CSG;
                 Debug.DrawRay(hit.point,hit.normal * 3,Color.red,5f);
             }
 
+
         }
     }
 
@@ -77,6 +60,12 @@ using Parabox.CSG;
         Mesh mesh = new Mesh();
 
         Mesh tmpMesh = DummyObject.GetComponent<MeshFilter>().mesh;
+/*
+                    TotalPoint += 2;
+                    DrawedVertices.Add(hit.point);
+                    DrawedUv.Add(Vector2.zero);
+                    DrawedNormals.Add(Vector3.up);
+*/
         int cnt = DrawedVertices.Count;
         int[] triArray = new int[((cnt ) * 3) + (((cnt/2)-2) * 3) ];
 //int[] triArray = new int[(cnt + ((cnt/2)-2)) * 3 ];

@@ -73,10 +73,10 @@ namespace Parabox.CSG
             Model csg_model_a = new Model(lhs);
             Model csg_model_b = new Model(rhs);
         
-            Node a = new Node(csg_model_a.ToPolygons());
-            Node b = new Node(csg_model_b.ToPolygons());
+            CSGNode a = new CSGNode(csg_model_a.ToPolygons());
+            CSGNode b = new CSGNode(csg_model_b.ToPolygons());
         
-            List<Polygon> polygons = Node.Union(a, b).AllPolygons();
+            List<Polygon> polygons = CSGNode.Union(a, b).AllPolygons();
         
             return new Model(polygons);
         }
@@ -92,10 +92,10 @@ namespace Parabox.CSG
             Model csg_model_a = new Model(lhs);
             Model csg_model_b = new Model(rhs);
         
-            Node a = new Node(csg_model_a.ToPolygons());
-            Node b = new Node(csg_model_b.ToPolygons());
+            CSGNode a = new CSGNode(csg_model_a.ToPolygons());
+            CSGNode b = new CSGNode(csg_model_b.ToPolygons());
         
-            List<Polygon> polygons = Node.Subtract(a, b).AllPolygons();
+            List<Polygon> polygons = CSGNode.Subtract(a, b).AllPolygons();
         
             return new Model(polygons);
         }
@@ -111,10 +111,10 @@ namespace Parabox.CSG
             Model csg_model_a = new Model(lhs);
             Model csg_model_b = new Model(rhs);
 
-            Node a = new Node(csg_model_a.ToPolygons());
-            Node b = new Node(csg_model_b.ToPolygons());
+            CSGNode a = new CSGNode(csg_model_a.ToPolygons());
+            CSGNode b = new CSGNode(csg_model_b.ToPolygons());
 
-            List<Polygon> polygons = Node.Intersect(a, b).AllPolygons();
+            List<Polygon> polygons = CSGNode.Intersect(a, b).AllPolygons();
 
             return new Model(polygons);
         }
