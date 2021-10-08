@@ -4,7 +4,10 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using Parabox.CSG;
 using ConcaveHull;
-   public class CarveScript : MonoBehaviour, IDragHandler,IEndDragHandler,IBeginDragHandler
+
+
+//deneme
+public class CarveScript : MonoBehaviour, IDragHandler,IEndDragHandler,IBeginDragHandler
 {
     [SerializeField] private Camera PlayerCamera;
     [SerializeField] private GameObject DummyObject;
