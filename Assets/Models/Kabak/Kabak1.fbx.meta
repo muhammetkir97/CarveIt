@@ -1,9 +1,19 @@
 fileFormatVersion: 2
-guid: 4927daebf9e0dd143b674094160e52fd
+guid: be4d60c0a6223864cad6a12225279cb8
 ModelImporter:
   serializedVersion: 19301
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Emisyon
+    second: {fileID: 2100000, guid: 2320b408d98820a478d2b4bb05dcb984, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Kabak
+    second: {fileID: 2100000, guid: db26119355747d249afb82952b890b3d, type: 2}
   materials:
     materialImportMode: 1
     materialName: 0
@@ -53,7 +63,7 @@ ModelImporter:
     skinWeightsMode: 0
     maxBonesPerVertex: 4
     minBoneWeight: 0.001
-    meshOptimizationFlags: -1
+    meshOptimizationFlags: 0
     indexFormat: 0
     secondaryUVAngleDistortion: 8
     secondaryUVAreaDistortion: 15.000001
