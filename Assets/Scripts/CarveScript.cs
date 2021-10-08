@@ -399,7 +399,7 @@ public class CarveScript : MonoBehaviour, IDragHandler,IEndDragHandler,IBeginDra
     {
         PlayerCamera = Camera.main;
         TmpTexture = Instantiate(PumpkinTexture);
-        PumpkinRenderer.material.mainTexture = TmpTexture;
+        PumpkinRenderer.material.SetTexture("Texture2D_4804D9FC", TmpTexture)  ;
 
         InitUvPoints();
 

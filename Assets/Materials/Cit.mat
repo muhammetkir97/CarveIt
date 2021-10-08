@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-8867977028922216406
+--- !u!114 &-6598844979772302725
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}
@@ -20,7 +20,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Kabak
+  m_Name: Cit
   m_Shader: {fileID: -6465566751694194690, guid: 43c9b04024f36c84bbd431979f4c16b0,
     type: 3}
   m_ShaderKeywords: 
@@ -34,15 +34,11 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - Texture2D_4804D9FC:
-        m_Texture: {fileID: 2800000, guid: 4cc261c855d822f43865d8fe8a8de07d, type: 3}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - Texture2D_58861AF5:
-        m_Texture: {fileID: 2800000, guid: 7d76c2aca225f054babfdf5d07b3912b, type: 3}
+        m_Texture: {fileID: 2800000, guid: 425f6c38181d057449e1098b546c4c60, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BaseMap:
-        m_Texture: {fileID: 2800000, guid: 4cc261c855d822f43865d8fe8a8de07d, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BumpMap:
@@ -54,7 +50,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 4cc261c855d822f43865d8fe8a8de07d, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
@@ -70,13 +66,13 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _mainTexture:
-        m_Texture: {fileID: 2800000, guid: 4cc261c855d822f43865d8fe8a8de07d, type: 3}
+        m_Texture: {fileID: 2800000, guid: 425f6c38181d057449e1098b546c4c60, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
-    - Vector1_60D43875: 0.11
-    - Vector1_8E659170: 2.6
-    - Vector1_9248F99F: 2.9
+    - Vector1_60D43875: 1.06
+    - Vector1_8E659170: 2.08
+    - Vector1_9248F99F: 4.8
     - _AlphaClip: 0
     - _Blend: 0
     - _BumpScale: 1
@@ -99,10 +95,10 @@ Material:
     - _WorkflowMode: 1
     - _ZWrite: 1
     m_Colors:
-    - Color_1E09A9C9: {r: 0.745283, g: 0.745283, b: 0.745283, a: 0}
-    - Color_5D4942F6: {r: 0.4008785, g: 0.410659, b: 0.93391466, a: 0}
-    - Color_9200C750: {r: 0.37892914, g: 0.37892914, b: 0.37892914, a: 0}
-    - Color_9AA280EA: {r: 1.319508, g: 1.319508, b: 1.319508, a: 0}
+    - Color_1E09A9C9: {r: 0.5754717, g: 0.5754717, b: 0.5754717, a: 0}
+    - Color_5D4942F6: {r: 1.5157166, g: 1.5157166, b: 1.5157166, a: 0}
+    - Color_9200C750: {r: 1, g: 1, b: 1, a: 0}
+    - Color_9AA280EA: {r: 0.38679248, g: 0.38679248, b: 0.38679248, a: 0}
     - Color_B9CDC1C0: {r: 0, g: 0, b: 0, a: 0}
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
