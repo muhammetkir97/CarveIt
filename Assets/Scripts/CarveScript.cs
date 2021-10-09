@@ -16,6 +16,7 @@ public class CarveScript : MonoBehaviour, IDragHandler,IEndDragHandler,IBeginDra
     [SerializeField] private Texture2D PumpkinTexture;
     [SerializeField] private MeshRenderer PumpkinRenderer;
     [SerializeField] private Texture2D CarveDetailTexture;
+    [SerializeField] private Texture2D AlphaDetailTexture;
     [SerializeField] private Color CarveColor;
 
     [Header("Point Detection")]
@@ -23,6 +24,7 @@ public class CarveScript : MonoBehaviour, IDragHandler,IEndDragHandler,IBeginDra
     [SerializeField] private Transform RayLimitDown;
     [SerializeField] private float RayStep;
     Dictionary<Vector2,Vector2> UvPoints = new Dictionary<Vector2, Vector2>();
+    // 
 
 
 
@@ -38,6 +40,7 @@ public class CarveScript : MonoBehaviour, IDragHandler,IEndDragHandler,IBeginDra
     int TotalPoint = 0;
 
     Texture2D TmpTexture;
+    Texture2D AlphaTexture;
 
     #region Hull
     List<Vector2> SortPoints(Vector2 center, List<Vector2> rawPoints)
@@ -208,6 +211,7 @@ public class CarveScript : MonoBehaviour, IDragHandler,IEndDragHandler,IBeginDra
                 {
                     //Color tmpColor = new Color(1,1,1,TmpTexture.GetPixel(newX,newY).a - alpha);
                     CarveColor.a = TmpTexture.GetPixel(newX,newY).a - alpha;
+                    AlphaTexture.SetPixel(newX, newY, CarveColor);
                     TmpTexture.SetPixel(newX,newY,CarveColor);
                 }
 
@@ -218,6 +222,7 @@ public class CarveScript : MonoBehaviour, IDragHandler,IEndDragHandler,IBeginDra
        
         if(setTexture) {
             TmpTexture.Apply();
+            AlphaTexture.Apply();
             //PumpkinRenderer.material.SetTexture("Texture2D_4804D9FC", TmpTexture)  ;
         }
         
@@ -478,8 +483,11 @@ Vector2 center = Vector2.zero;
     {
         PlayerCamera = Camera.main;
         TmpTexture = Instantiate(PumpkinTexture);
+        AlphaTexture = Instantiate(AlphaDetailTexture);
         PumpkinRenderer.material.SetTexture("_mainTexture", TmpTexture)  ;
         Debug.Log(PumpkinRenderer.material.GetTexture("Texture2D_4804D9FC").name);
+        PumpkinRenderer.material.SetTexture("_alpha", AlphaTexture);
+
 
         InitUvPoints();
 

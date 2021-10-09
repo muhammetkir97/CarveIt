@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.026152954, g: 0.054886233, b: 0.12245244, a: 1}
+  m_IndirectSpecularColor: {r: 0.025920235, g: 0.054645102, b: 0.12165679, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -763,9 +763,10 @@ MonoBehaviour:
   DummyObject: {fileID: 219379233}
   CarveObject: {fileID: 2658509730428447732}
   Knife: {fileID: 2047949809}
-  PumpkinTexture: {fileID: 2800000, guid: 4cc261c855d822f43865d8fe8a8de07d, type: 3}
+  PumpkinTexture: {fileID: 2800000, guid: e477043d0170e84418ee41f5b9552b61, type: 3}
   PumpkinRenderer: {fileID: 7759903938479543903}
-  CarveDetailTexture: {fileID: 2800000, guid: 81754f2aeaf5fb94faf32a41e513a0db, type: 3}
+  CarveDetailTexture: {fileID: 2800000, guid: de45f5bcda48e834a903987f3acfad1b, type: 3}
+  AlphaDetailTexture: {fileID: 2800000, guid: 7c99d03ce54221c4fb2598755019e13e, type: 3}
   CarveColor: {r: 0.7058824, g: 0.35698864, b: 0.015686274, a: 1}
   RayLimitUp: {fileID: 890895710}
   RayLimitDown: {fileID: 189000882}
