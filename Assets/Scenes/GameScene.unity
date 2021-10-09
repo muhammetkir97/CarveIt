@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.025920235, g: 0.054645102, b: 0.12165679, a: 1}
+  m_IndirectSpecularColor: {r: 0.026152954, g: 0.054886233, b: 0.12245244, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -766,11 +766,12 @@ MonoBehaviour:
   PumpkinTexture: {fileID: 2800000, guid: 4cc261c855d822f43865d8fe8a8de07d, type: 3}
   PumpkinRenderer: {fileID: 7759903938479543903}
   CarveDetailTexture: {fileID: 2800000, guid: 81754f2aeaf5fb94faf32a41e513a0db, type: 3}
+  CarveColor: {r: 0.7058824, g: 0.35698864, b: 0.015686274, a: 1}
   RayLimitUp: {fileID: 890895710}
   RayLimitDown: {fileID: 189000882}
   RayStep: 0.005
-  Concavity: -0.7
-  ScaleFactor: 1
+  Concavity: -0.23
+  ScaleFactor: 0
 --- !u!1 &890895709
 GameObject:
   m_ObjectHideFlags: 0
@@ -1290,7 +1291,7 @@ Light:
   m_Shape: 0
   m_Color: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
   m_Intensity: 0.22
-  m_Range: 10
+  m_Range: 0
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
   m_CookieSize: 10

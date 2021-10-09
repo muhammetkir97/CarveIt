@@ -16,6 +16,7 @@ public class CarveScript : MonoBehaviour, IDragHandler,IEndDragHandler,IBeginDra
     [SerializeField] private Texture2D PumpkinTexture;
     [SerializeField] private MeshRenderer PumpkinRenderer;
     [SerializeField] private Texture2D CarveDetailTexture;
+    [SerializeField] private Color CarveColor;
 
     [Header("Point Detection")]
     [SerializeField] private Transform RayLimitUp;
@@ -25,7 +26,7 @@ public class CarveScript : MonoBehaviour, IDragHandler,IEndDragHandler,IBeginDra
 
 
 
-    public float Concavity = -0.5f;
+    public float Concavity;
     public int ScaleFactor = 1;
 
 
@@ -185,7 +186,8 @@ public class CarveScript : MonoBehaviour, IDragHandler,IEndDragHandler,IBeginDra
         {
             for(int j =0; j < height ; j++)
             {
-                Color tmpColor = new Color(0,0,0,CarveDetailTexture.GetPixel(i,j).r);
+                Color pixelColor = CarveDetailTexture.GetPixel(i,j);
+                Color tmpColor = new Color(pixelColor.r,pixelColor.g,pixelColor.b,pixelColor.r);
                 detail.Add(new Vector2(i - (width/2),j-(height/2)),tmpColor);
             }
         }
@@ -200,13 +202,24 @@ public class CarveScript : MonoBehaviour, IDragHandler,IEndDragHandler,IBeginDra
 
             if(newX >= 0 && newX < TmpTexture.width && newY >= 0 && newY < TmpTexture.height)
             {
+                float alpha = (1 - detail[detailPos].a);
                 //TmpTexture.GetPixel(newX,newY).a + detail[detailPos].a
-                Color tmpColor = new Color(1,1,1,TmpTexture.GetPixel(newX,newY).a - (1 - detail[detailPos].a));
-                TmpTexture.SetPixel(newX,newY,tmpColor);
+                if(alpha > 0.1f)
+                {
+                    //Color tmpColor = new Color(1,1,1,TmpTexture.GetPixel(newX,newY).a - alpha);
+                    CarveColor.a = TmpTexture.GetPixel(newX,newY).a - alpha;
+                    TmpTexture.SetPixel(newX,newY,CarveColor);
+                }
+
+                
+
             }
         }
-
-        if(setTexture) TmpTexture.Apply();
+       
+        if(setTexture) {
+            TmpTexture.Apply();
+            //PumpkinRenderer.material.SetTexture("Texture2D_4804D9FC", TmpTexture)  ;
+        }
         
     }
 
@@ -340,28 +353,73 @@ public class CarveScript : MonoBehaviour, IDragHandler,IEndDragHandler,IBeginDra
         List<Vector2> limitPoints = new List<Vector2>();
 
 
-        int cnt = 0;
+        
+
         for (int i = 0; i < Hull.hull_concave_edges.Count; i++) 
         {
-            float xPos =(float)Hull.hull_concave_edges[i].nodes[0].x;
-            float yPos =(float)Hull.hull_concave_edges[i].nodes[0].y;
+            float xPos =0, yPos = 0;
+            for(int j=0; j<2;j++)
+            {
+                xPos =(float)Hull.hull_concave_edges[i].nodes[j].x;
+                yPos =(float)Hull.hull_concave_edges[i].nodes[j].y;
+                limitPoints.Add(new Vector2(xPos,yPos));
+             
+ 
+            }
 
-            limitPoints.Add(new Vector2(xPos,yPos));
-            cnt++;
+      
+                Debug.DrawLine(limitPoints[(i*2)+1],limitPoints[i*2],Color.red,3f);
+            
+            
+        
+
         }
 
-        foreach(Vector2 pos in limitPoints)
+List<Vector2> filteredPoints = new List<Vector2>();
+
+int cnt = 0;
+Vector2 center = Vector2.zero;
+        for(int i=0; i<limitPoints.Count; i++)
         {
-            Debug.Log(pos);
+            bool isSame = false;
+            for(int j=0; j<filteredPoints.Count; j++)
+            {
+                if(limitPoints[i] == filteredPoints[j])
+                {
+                    isSame = true;
+                    break;
+                } 
+
+            }
+
+            if(!isSame) 
+            {
+                cnt++;
+                center += new Vector2(Mathf.RoundToInt(limitPoints[i].x),Mathf.RoundToInt(limitPoints[i].y));
+                filteredPoints.Add(new Vector2(Mathf.RoundToInt(limitPoints[i].x),Mathf.RoundToInt(limitPoints[i].y)));
+            }
         }
+        center = center / cnt;
+
+        List<Vector2> sortedPoints = SortPoints(center,filteredPoints);
+        
+
+/*
+        foreach(Vector2 limitPos in sortedPoints)
+        {
+            //Vector3 tmpPos = new Vector3(limitPos.x,limitPos.y,-1.0f);
+            // Debug.DrawRay(tmpPos,Vector3.forward,Color.red,3f);
+        }
+*/
 
         foreach(Vector2 pos in UvPoints.Keys)
         {
-            Debug.Log("carve kontrol");
-            
-            if(PointInPolygon(limitPoints,pos.x,pos.y))
+            Vector3 rayPos1 = new Vector3(pos.x,pos.y,0);
+            //Debug.DrawRay(rayPos1,Vector3.forward,Color.yellow,3);
+            if(pointInPolygon(sortedPoints,pos))
             {
-                Debug.Log("carve eklendi");
+                Vector3 rayPos = new Vector3(pos.x,pos.y,0);
+                Debug.DrawRay(rayPos,Vector3.forward,Color.green,3);
                 ApplyCarvingDetail(UvPoints[pos],false);
             }
         }
@@ -376,6 +434,27 @@ public class CarveScript : MonoBehaviour, IDragHandler,IEndDragHandler,IBeginDra
         Hull.unused_nodes.Clear();
         TotalPoint = 0;
 
+    }
+
+    bool pointInPolygon(List<Vector2> polyCorners,Vector2 testPoint) 
+    {
+
+        int i; 
+        int j = polyCorners.Count-1 ;
+        bool oddNodes = false;
+
+        for (i=0; i<polyCorners.Count; i++) 
+        {
+            if ((polyCorners[i].y < testPoint.y && polyCorners[j].y>=testPoint.y ||   polyCorners[j].y< testPoint.y && polyCorners[i].y >= testPoint.y) && (polyCorners[i].x<=testPoint.x || polyCorners[j].x<= testPoint.x)) 
+            {
+                if (polyCorners[i].x+(testPoint.y-polyCorners[i].y)/(polyCorners[j].y-polyCorners[i].y)*(polyCorners[j].x -polyCorners[i].x)<testPoint.x) 
+                {
+                    oddNodes=!oddNodes; 
+                }
+            }
+            j=i; 
+        }
+        return oddNodes; 
     }
 
 
@@ -399,7 +478,8 @@ public class CarveScript : MonoBehaviour, IDragHandler,IEndDragHandler,IBeginDra
     {
         PlayerCamera = Camera.main;
         TmpTexture = Instantiate(PumpkinTexture);
-        PumpkinRenderer.material.SetTexture("Texture2D_4804D9FC", TmpTexture)  ;
+        PumpkinRenderer.material.SetTexture("_mainTexture", TmpTexture)  ;
+        Debug.Log(PumpkinRenderer.material.GetTexture("Texture2D_4804D9FC").name);
 
         InitUvPoints();
 
