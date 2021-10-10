@@ -14,9 +14,12 @@ public class CarveScript : MonoBehaviour, IDragHandler,IEndDragHandler,IBeginDra
     [SerializeField] private GameObject CarveObject;
     [SerializeField] private GameObject Knife;
     [SerializeField] private Texture2D PumpkinTexture;
+    private Color[] PumpkinTextureValues;
+    private Vector2 PumpkinTextureSize;
     [SerializeField] private MeshRenderer PumpkinRenderer;
-    [SerializeField] private Texture2D CarveDetailTexture;
     [SerializeField] private Texture2D AlphaDetailTexture;
+    private Color[] AlphaTextureValues;
+    private Vector2 AlphaTextureSize;
     [SerializeField] private Color CarveColor;
 
     [Header("Point Detection")]
@@ -24,7 +27,21 @@ public class CarveScript : MonoBehaviour, IDragHandler,IEndDragHandler,IBeginDra
     [SerializeField] private Transform RayLimitDown;
     [SerializeField] private float RayStep;
     Dictionary<Vector2,Vector2> UvPoints = new Dictionary<Vector2, Vector2>();
-    // 
+
+    [Header("Knife Control")]
+    [SerializeField] private float KnifePositionSmooth;
+    [SerializeField] private float KnifeAngleSmooth;
+    [SerializeField] private float KnifeCutSmooth;
+    
+    #region Brushes
+
+    [SerializeField] private Brush[] BrushValues;
+    Dictionary<Vector2,Color> CarveBrushValues = new Dictionary<Vector2, Color>();
+
+    Dictionary<Vector2,Color> HoleBrushValues = new Dictionary<Vector2, Color>();
+    #endregion
+
+
 
 
 
@@ -41,6 +58,7 @@ public class CarveScript : MonoBehaviour, IDragHandler,IEndDragHandler,IBeginDra
 
     Texture2D TmpTexture;
     Texture2D AlphaTexture;
+    bool IsCarved = true;
 
     #region Hull
     List<Vector2> SortPoints(Vector2 center, List<Vector2> rawPoints)
@@ -180,21 +198,29 @@ public class CarveScript : MonoBehaviour, IDragHandler,IEndDragHandler,IBeginDra
     }
 
 
-    void ApplyCarvingDetail(Vector2 pos,bool setTexture)
+
+    Brush GetBrush(BrushTags brushName)
     {
-        Dictionary<Vector2,Color> detail = new Dictionary<Vector2, Color>();
-        int width = CarveDetailTexture.width;
-        int height = CarveDetailTexture.height;
-        for(int i =0; i<width ; i++)
+        Brush selectedBrush = BrushValues[0];
+
+        foreach(Brush savedBrush in BrushValues)
         {
-            for(int j =0; j < height ; j++)
+            if(savedBrush.BrushName == brushName)
             {
-                Color pixelColor = CarveDetailTexture.GetPixel(i,j);
-                Color tmpColor = new Color(pixelColor.r,pixelColor.g,pixelColor.b,pixelColor.r);
-                detail.Add(new Vector2(i - (width/2),j-(height/2)),tmpColor);
+                selectedBrush = savedBrush;
+                break;
             }
         }
 
+        return selectedBrush;
+    }
+
+
+    void ApplyCarvingDetail(Vector2 pos,bool setTexture,BrushTags brushName)
+    {
+
+        Dictionary<Vector2,Color> detail = GetBrush(brushName).GetBrushValues();
+     
         int x = (int)pos.x;
         int y = (int)pos.y;
 
@@ -203,16 +229,19 @@ public class CarveScript : MonoBehaviour, IDragHandler,IEndDragHandler,IBeginDra
             int newX = x + (int)detailPos.x;
             int newY = y + (int)detailPos.y;
 
-            if(newX >= 0 && newX < TmpTexture.width && newY >= 0 && newY < TmpTexture.height)
+            if(newX >= 0 && newX < PumpkinTextureSize.x && newY >= 0 && newY < PumpkinTextureSize.y)
             {
                 float alpha = (1 - detail[detailPos].a);
                 //TmpTexture.GetPixel(newX,newY).a + detail[detailPos].a
                 if(alpha > 0.1f)
                 {
                     //Color tmpColor = new Color(1,1,1,TmpTexture.GetPixel(newX,newY).a - alpha);
-                    CarveColor.a = TmpTexture.GetPixel(newX,newY).a - alpha;
-                    AlphaTexture.SetPixel(newX, newY, CarveColor);
-                    TmpTexture.SetPixel(newX,newY,CarveColor);
+                    //CarveColor.a = TmpTexture.GetPixel(newX,newY).a - alpha;
+                    CarveColor.a = AlphaTextureValues[newY * (int)PumpkinTextureSize.y + newX].a - alpha;
+                    AlphaTextureValues[newY * (int)AlphaTextureSize.x + newX] = CarveColor;
+                    PumpkinTextureValues[newY * (int)PumpkinTextureSize.x + newX] = CarveColor;
+                    //AlphaTexture.SetPixel(newX, newY, CarveColor);
+                    //TmpTexture.SetPixel(newX,newY,CarveColor);
                 }
 
                 
@@ -221,11 +250,28 @@ public class CarveScript : MonoBehaviour, IDragHandler,IEndDragHandler,IBeginDra
         }
        
         if(setTexture) {
-            TmpTexture.Apply();
-            AlphaTexture.Apply();
+            //TmpTexture.Apply();
+            //AlphaTexture.Apply();
             //PumpkinRenderer.material.SetTexture("Texture2D_4804D9FC", TmpTexture)  ;
         }
+
+        IsCarved = true;
         
+    }
+
+    void AssignColorValues()
+    {
+        if(IsCarved)
+        {
+            AlphaTexture.SetPixels(AlphaTextureValues);
+            TmpTexture.SetPixels(PumpkinTextureValues,0);
+     
+            TmpTexture.Apply();
+            AlphaTexture.Apply();
+            IsCarved = false;
+        }
+
+
     }
 
     #endregion
@@ -299,13 +345,28 @@ public class CarveScript : MonoBehaviour, IDragHandler,IEndDragHandler,IBeginDra
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-
+        FindCarvePosition(eventData.position,true);
     }
+
+
 
     public void OnDrag(PointerEventData eventData)
     {
+        FindCarvePosition(eventData.position,false);
+    }
+
+
+
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        SetKnifePosition(Vector3.one * -99,Vector3.zero,true);
+        GetConcaveHull();
+    }
+
+    void FindCarvePosition(Vector2 eventPosition,bool setFast)
+    {
         RaycastHit hit;
-        Ray ray = PlayerCamera.ScreenPointToRay(Input.mousePosition);
+        Ray ray = PlayerCamera.ScreenPointToRay(eventPosition);
 
         if (Physics.Raycast(ray, out hit)) 
         {
@@ -314,7 +375,7 @@ public class CarveScript : MonoBehaviour, IDragHandler,IEndDragHandler,IBeginDra
 
             if(texCoord != new Vector2(-1000,-1000))
             {
-                ApplyCarvingDetail(texCoord,true);
+                ApplyCarvingDetail(texCoord,true,BrushTags.CarveBrush);
                 
                 int x = (int)(Mathf.Abs((hit.point - RayLimitUp.position).x / RayStep));
                 int y = (int)(Mathf.Abs((hit.point - RayLimitUp.position).y / RayStep));
@@ -322,19 +383,8 @@ public class CarveScript : MonoBehaviour, IDragHandler,IEndDragHandler,IBeginDra
             }
             
 
-            SetKnifePosition(hit.point,hit.normal);
+            SetKnifePosition(hit.point,hit.normal,setFast);
         }
-    }
-
-
-
-    public void OnEndDrag(PointerEventData eventData)
-    {
-
-        SetKnifePosition(Vector3.one * -99,Vector3.zero);
-
-        GetConcaveHull();
-
     }
 
 
@@ -350,7 +400,7 @@ public class CarveScript : MonoBehaviour, IDragHandler,IEndDragHandler,IBeginDra
         Hull.setConvexHull(CarvePoints);
         Hull.setConcaveHull(Concavity, ScaleFactor);
 
-        Invoke("SetCarve",0.2f);
+        Invoke("SetCarve",0.1f);
     }
 
     void SetCarve()
@@ -373,17 +423,17 @@ public class CarveScript : MonoBehaviour, IDragHandler,IEndDragHandler,IBeginDra
             }
 
       
-                Debug.DrawLine(limitPoints[(i*2)+1],limitPoints[i*2],Color.red,3f);
+                //Debug.DrawLine(limitPoints[(i*2)+1],limitPoints[i*2],Color.red,3f);
             
             
         
 
         }
 
-List<Vector2> filteredPoints = new List<Vector2>();
+        List<Vector2> filteredPoints = new List<Vector2>();
 
-int cnt = 0;
-Vector2 center = Vector2.zero;
+        int cnt = 0;
+        Vector2 center = Vector2.zero;
         for(int i=0; i<limitPoints.Count; i++)
         {
             bool isSame = false;
@@ -424,12 +474,12 @@ Vector2 center = Vector2.zero;
             if(pointInPolygon(sortedPoints,pos))
             {
                 Vector3 rayPos = new Vector3(pos.x,pos.y,0);
-                Debug.DrawRay(rayPos,Vector3.forward,Color.green,3);
-                ApplyCarvingDetail(UvPoints[pos],false);
+                //Debug.DrawRay(rayPos,Vector3.forward,Color.green,3);
+                ApplyCarvingDetail(UvPoints[pos],false,BrushTags.HoleBrush);
             }
         }
 
-        TmpTexture.Apply();
+
 
 
         
@@ -462,42 +512,103 @@ Vector2 center = Vector2.zero;
         return oddNodes; 
     }
 
-
-    void SetKnifePosition(Vector3 pos,Vector3 norm)
+ 
+    Vector3 KnifePos = Vector3.one * -99;
+    Quaternion KnifeAngle = Quaternion.identity;
+    Quaternion CutAngle = Quaternion.identity;
+    void SetKnifePosition(Vector3 pos,Vector3 norm,bool setFast)
     {
-        Knife.transform.position = pos;
-        Knife.transform.rotation = Quaternion.LookRotation(norm);
-
+        KnifePos = pos;
+        KnifeAngle = Quaternion.LookRotation(norm);
+ 
         Vector3 angleVector = pos - LastKnifePosition;
         float cutAngle = Vector3.SignedAngle(angleVector.normalized,-Vector3.up,-Vector3.forward);
-        //Debug.Log(cutAngle);
-        iTween.RotateTo(Knife.transform.GetChild(0).gameObject,iTween.Hash("rotation",new Vector3(0,0,-cutAngle),"time",0.1f,"islocal",true,"ignoretimescale",true));
-        //Knife.transform.GetChild(0).localRotation = ;
+        CutAngle = Quaternion.Euler(0,0,-cutAngle);
+
         LastKnifePosition = pos;
-        //Knife.transform.LookAt()
+
+        if(setFast)
+        {
+            Knife.transform.position = pos;
+            Knife.transform.rotation = KnifeAngle;
+        }
+
+    }
+
+    Vector3 SmoothPos = Vector3.zero;
+    float RotationTime =0,CutTime = 0;
+
+    void KnifeMovement()
+    {
+        Knife.transform.position = Vector3.SmoothDamp(Knife.transform.position,KnifePos,ref SmoothPos,KnifePositionSmooth);
+        Knife.transform.rotation = Quaternion.Slerp(Knife.transform.rotation,KnifeAngle,RotationTime);
+        Knife.transform.GetChild(0).localRotation = Quaternion.Slerp(Knife.transform.GetChild(0).localRotation,CutAngle,CutTime);
+        RotationTime += Time.deltaTime/KnifeAngleSmooth;
+        CutTime += Time.deltaTime/KnifeCutSmooth;
+    }
+
+    void InitTextureValues()
+    {
+        PumpkinTextureSize = new Vector2(TmpTexture.width,TmpTexture.height);
+        AlphaTextureSize = new Vector2(AlphaTexture.width,AlphaTexture.height);
+
+        int width = (int)PumpkinTextureSize.x;
+        int height = (int)PumpkinTextureSize.y;
+        PumpkinTextureValues = new Color[width * height];
+        for(int x=0; x<width; x++)
+        {
+            for(int y=0; y<height; y++)
+            {
+                PumpkinTextureValues[y * width + x] = TmpTexture.GetPixel(x,y);
+            }
+        }
+
+        width = (int)AlphaTextureSize.x;
+        height = (int)AlphaTextureSize.y;
+        AlphaTextureValues = new Color[width * height];
+        for(int x=0; x<width; x++)
+        {
+            for(int y=0; y<height; y++)
+            {
+                AlphaTextureValues[y * width + x] = AlphaTexture.GetPixel(x,y);
+            }
+        }
     }
 
 
     // Start is called before the first frame update
     void Start()
     {
+        Application.targetFrameRate = 30;
         PlayerCamera = Camera.main;
         TmpTexture = Instantiate(PumpkinTexture);
         AlphaTexture = Instantiate(AlphaDetailTexture);
         PumpkinRenderer.material.SetTexture("_mainTexture", TmpTexture)  ;
-        Debug.Log(PumpkinRenderer.material.GetTexture("Texture2D_4804D9FC").name);
         PumpkinRenderer.material.SetTexture("_alpha", AlphaTexture);
 
 
+        InitTextureValues();
+
         InitUvPoints();
 
+        InvokeRepeating("AssignColorValues",0,0.15f);
     }
+
 
     // Update is called once per frame
     void Update()
     {
-        
+        KnifeMovement();
     }
+
+    
+    void FixedUpdate()
+    {
+
+        //Knife.transform.eulerAngles = Vector3.SmoothDamp(Knife.transform.eulerAngles,KnifeAngle,ref SmoothAngle,0.08f);
+    }
+
+
 }
  
 
