@@ -423,7 +423,7 @@ public class CarveScript : MonoBehaviour, IDragHandler,IEndDragHandler,IBeginDra
             }
 
       
-                //Debug.DrawLine(limitPoints[(i*2)+1],limitPoints[i*2],Color.red,3f);
+                Debug.DrawLine(limitPoints[(i*2)+1],limitPoints[i*2],Color.red,3f);
             
             
         

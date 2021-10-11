@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class ImageCompare : MonoBehaviour
 {
-    // Start is called before the first frame update
+
     void Start()
     {
         
@@ -15,4 +15,6 @@ public class ImageCompare : MonoBehaviour
     {
         
     }
+
+
 }
