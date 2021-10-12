@@ -8,8 +8,11 @@ public class GameScript : MonoBehaviour
     [SerializeField] private Light InsideLight;
 
     [SerializeField] private RenderTexture CurrentView;
+    [SerializeField] private Camera CurrentViewCam;
     [SerializeField] private Button BtnSave;
     [SerializeField] private Button BtnCompare;
+
+    [SerializeField] private MeshRenderer PumpkinRenderer;
 
     void Start()
     {
@@ -35,15 +38,32 @@ public class GameScript : MonoBehaviour
     int[,] Image1Values = new int[3,255];
     int[,] Image2Values = new int[3,255];
 
-    public float Compare()
+    void ResetHistograms()
     {
-        float similarityRate = 0;
+        for(int i=0; i<3; i++)
+        {
+            for(int j=0; j<255; j++)
+            {
+                Image1Values[i,j] = 0;
+                Image2Values[i,j] = 0;
+            }
+        }
+    }
 
-        Texture2D currentTex = RenderToTexture2D(CurrentView);
+    public int Compare()
+    {
+        ResetHistograms();
+        int similarityRate = 0;
+
+        Texture2D currentTex = (Texture2D)PumpkinRenderer.material.GetTexture("_mainTexture");
+        //currentTex.Resize(512,512);
+        //currentTex.Apply();
+
         Texture2D targetTex = Globals.Instance.GetCurrentTargetTexture();
 
         int[,] tempHistogram1 = GetImageHistogram(currentTex);
         int[,] tempHistogram2 = GetImageHistogram(targetTex);
+
 
         similarityRate = CompareHistograms(tempHistogram1,tempHistogram2);
 
@@ -52,7 +72,8 @@ public class GameScript : MonoBehaviour
 
     Texture2D RenderToTexture2D(RenderTexture renderTex)
     {
-        Texture2D tex = new Texture2D(renderTex.width, renderTex.height, TextureFormat.RGB24, false);
+        CurrentViewCam.Render();
+        Texture2D tex = new Texture2D(renderTex.width, renderTex.height, TextureFormat.ARGB32, false);
         RenderTexture.active = renderTex;
         tex.ReadPixels(new Rect(0, 0, renderTex.width, renderTex.height), 0, 0);
         tex.Apply();
@@ -63,6 +84,15 @@ public class GameScript : MonoBehaviour
     int[,] GetImageHistogram(Texture2D image)
     {
         int[,] histogram = new int[3,255];
+
+        for(int i=0; i<3; i++)
+        {
+            for(int j=0; j<255; j++)
+            {
+                histogram[i,j] = 0;
+    
+            }
+        }
 
         int width = image.width;
         int height = image.height;
@@ -78,18 +108,20 @@ public class GameScript : MonoBehaviour
                 int g = (int)(pixelColor.g * 254);
                 int b = (int)(pixelColor.b * 254);
 
+                
+
                 histogram[0,r]++;
-                histogram[0,g]++;
-                histogram[0,b]++;
+                histogram[1,g]++;
+                histogram[2,b]++;
             }
         }
 
         return histogram;
     }
 
-    float CompareHistograms(int[,] histogram1, int[,] histogram2)
+    int CompareHistograms(int[,] histogram1, int[,] histogram2)
     {
-        float matchValue = 0;
+        int matchValue = 0;
 
         for(int channel=0; channel<3; channel++)
         {
@@ -109,13 +141,19 @@ public class GameScript : MonoBehaviour
 
     void SaveTextureToFile (Texture2D texture,string path) 
     {
+        
         byte[] bytes = texture.EncodeToPNG();
         System.IO.File.WriteAllBytes(path, bytes);
     }
 
     void SaveCurrentScene()
     {
-        SaveTextureToFile(RenderToTexture2D(CurrentView),$"{Application.dataPath}/Resources/Levels/level.png");
+    
+        Texture2D pumpkinTexture = Instantiate((Texture2D)PumpkinRenderer.material.GetTexture("_mainTexture"));
+        //pumpkinTexture.Resize(512,512);
+        //pumpkinTexture.Apply();
+        SaveTextureToFile(pumpkinTexture,$"{Application.dataPath}/Resources/Levels/level.png");
+        //SaveTextureToFile(RenderToTexture2D(CurrentView),$"{Application.dataPath}/Resources/Levels/level.png");
     }
 
 
@@ -123,7 +161,7 @@ public class GameScript : MonoBehaviour
 
     void ComparePumpkin()
     {
-        float similarity = Compare();
+        int similarity = Compare();
         Debug.Log(similarity);
     }
     // Update is called once per frame

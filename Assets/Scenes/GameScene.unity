@@ -185,8 +185,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   InsideLight: {fileID: 1387118423}
   CurrentView: {fileID: 8400000, guid: 3ee5407b2016cc847a6bc0b38aa62272, type: 2}
+  CurrentViewCam: {fileID: 447728261}
   BtnSave: {fileID: 533538248}
   BtnCompare: {fileID: 1954569467}
+  PumpkinRenderer: {fileID: 7759903938479543903}
 --- !u!4 &74309596
 Transform:
   m_ObjectHideFlags: 0
