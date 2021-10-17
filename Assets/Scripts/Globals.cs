@@ -27,6 +27,13 @@ public class Globals : MonoBehaviour
         return targetTexture;
     }
 
+    public Texture2D GetCurrentTargetScene()
+    {
+        Texture2D targetTexture = Resources.Load<Texture2D>($"Scenes/{GetCurrentLevel()}");
+
+        return targetTexture;
+    }
+
     void Start()
     {
         

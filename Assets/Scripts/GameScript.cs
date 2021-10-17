@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class GameScript : MonoBehaviour
 {
@@ -11,8 +12,19 @@ public class GameScript : MonoBehaviour
     [SerializeField] private Camera CurrentViewCam;
     [SerializeField] private Button BtnSave;
     [SerializeField] private Button BtnCompare;
+    [SerializeField] private GameObject DebugMenu;
 
     [SerializeField] private MeshRenderer PumpkinRenderer;
+
+    [SerializeField] private ParticleSystem EndParticle;
+    [SerializeField] private GameObject SimilarityPopup;
+    [SerializeField] private GameObject MainPopup;
+    [SerializeField] private Image SimilarityProgress;
+    [SerializeField] private Button BtnSend;
+
+    [SerializeField] private RawImage TargetScene;
+
+    bool DebugMenuStatus = false;
 
     void Start()
     {
@@ -21,6 +33,10 @@ public class GameScript : MonoBehaviour
 
         BtnSave.onClick.AddListener(SaveCurrentScene);
         BtnCompare.onClick.AddListener(ComparePumpkin);
+        BtnSend.onClick.AddListener(SendPumpkin);
+
+        TargetScene.texture = Globals.Instance.GetCurrentTargetScene();
+
     }
 
     void StartLightAnimation()
@@ -148,11 +164,13 @@ public class GameScript : MonoBehaviour
 
     void SaveCurrentScene()
     {
-    
+        Texture2D sceneImage = RenderToTexture2D(CurrentView);
+
         Texture2D pumpkinTexture = Instantiate((Texture2D)PumpkinRenderer.material.GetTexture("_mainTexture"));
         //pumpkinTexture.Resize(512,512);
         //pumpkinTexture.Apply();
         SaveTextureToFile(pumpkinTexture,$"{Application.dataPath}/Resources/Levels/level.png");
+        SaveTextureToFile(sceneImage,$"{Application.dataPath}/Resources/Scenes/level.png");
         //SaveTextureToFile(RenderToTexture2D(CurrentView),$"{Application.dataPath}/Resources/Levels/level.png");
     }
 
@@ -164,10 +182,52 @@ public class GameScript : MonoBehaviour
         int similarity = Compare();
         Debug.Log(similarity);
     }
+
+    void SendPumpkin()
+    {
+        iTween.MoveTo(MainPopup,MainPopup.transform.position + Vector3.left * 1000,0.3f);
+        iTween.MoveTo(SimilarityPopup,SimilarityPopup.transform.position + Vector3.up * 500,0.3f);
+        Invoke("LateCompare",0.3f);
+        
+    }
+
+    void LateCompare()
+    {
+        int similarity = Compare();
+        Debug.Log(similarity);
+        float ratio = 1 - (similarity / 200000f);
+        if(ratio < 0) ratio  = 0;
+        iTween.ValueTo(gameObject,iTween.Hash("from",0,"to",ratio,"time",1f,"onupdate","changeProgressBarValue"));
+        Invoke("StartCompareEffects",1);
+    }
+
+    void changeProgressBarValue(float val)
+    {
+        SimilarityProgress.fillAmount = val;
+    }
+
+    void StartCompareEffects()
+    {
+        EndParticle.Play();
+    }
+
+
     // Update is called once per frame
     void Update()
     {
-        
+        if(Input.GetKeyDown(KeyCode.D))
+        {
+            DebugMenuStatus = !DebugMenuStatus;
+
+            if(DebugMenuStatus)
+            {
+                iTween.ScaleTo(DebugMenu,Vector3.one,0.3f);
+            }
+            else
+            {
+                iTween.ScaleTo(DebugMenu,Vector3.zero,0.3f);
+            }
+        }
     }
 
 
